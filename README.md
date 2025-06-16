@@ -31,6 +31,6 @@ The script will start clicking the three-dot menu and unfollow buttons automatic
 - At the **top of the script**, you will find these selectors:
 
 ```js
-const unfollowListContainerSelector = '.x78zum5.x1q0g3np.x1a02dak.x1qughib'; // Container holding the 3-dot buttons
+const unfollowListContainerSelector = '.x78zum5.x1q0g3np.x1a02dak.x1qughib'; // Container holding the list of peoples and pages
 const threeDotSelector = '.x1b0d499.xep6ejk'; // Selector for the 3-dot menu button
 const unfollowText = 'unfollow'; // Text of the unfollow button (case-insensitive)
