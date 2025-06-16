@@ -1,0 +1,87 @@
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
+// Selectors at the top for easy modification
+const unfollowListContainerSelector = '.x78zum5.x1q0g3np.x1a02dak.x1qughib'; // Container holding the friends and pages list
+const threeDotSelector = '.x1b0d499.xep6ejk'; // The 3-dot menu button selector
+const unfollowText = 'unfollow'; // The text of the unfollow button in the menu
+
+/**
+ * Smoothly scrolls the page down by a specified distance in small steps.
+ * Resolves when bottom of the page is reached.
+ * @param {number} distance - Number of pixels to scroll each step.
+ * @param {number} stepDelay - Delay in milliseconds between each scroll step.
+ */
+async function autoScrollBy(distance = 200, stepDelay = 50) {
+  return new Promise(resolve => {
+    const interval = setInterval(() => {
+      window.scrollBy(0, distance);
+
+      if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight) {
+        clearInterval(interval);
+        resolve();
+      }
+    }, stepDelay);
+  });
+}
+
+/**
+ * Main loop that:
+ * 1. Finds all unclicked 3-dot buttons inside the unfollow container,
+ * 2. Clicks each 3-dot button to open the menu,
+ * 3. Clicks the first visible 'Unfollow' button found,
+ * 4. Scrolls down to load more content when no more buttons left,
+ * 5. Logs progress with meaningful messages.
+ */
+async function clickAndScrollLoop() {
+  let totalClicked = 0;
+
+  while (true) {
+    // Find the container holding 3-dot buttons
+    const container = document.querySelector(unfollowListContainerSelector);
+    if (!container) {
+      console.log("❌ Container not found");
+      break;
+    }
+
+    // Get all 3-dot buttons inside the container which are not yet clicked
+    const threeDots = Array.from(container.querySelectorAll(threeDotSelector))
+      .filter(btn => !btn.dataset.clicked);
+
+    if (threeDots.length === 0) {
+      console.log("🎯 No more new 3-dot buttons found, process completed.");
+      break;
+    }
+
+    for (const btn of threeDots) {
+      btn.dataset.clicked = "true";
+
+      // Click 3-dot button to open menu
+      btn.click();
+      await delay(1000); // Wait 1 second for menu animation / AJAX load
+
+      // Find the first visible 'Unfollow' button on page
+      const unfollowBtn = Array.from(document.querySelectorAll('*')).find(el =>
+        el.textContent.trim().toLowerCase() === unfollowText && el.offsetParent !== null
+      );
+
+      if (unfollowBtn) {
+        unfollowBtn.click();
+        totalClicked++;
+        console.log(`🚫 Successfully unfollowed ${totalClicked} person(s)`);
+        await delay(500); // Short delay after unfollow click
+      } else {
+        console.log("⚠️ No visible 'Unfollow' button found after 3-dot click.");
+      }
+
+      await delay(300);
+    }
+
+    // Scroll down a bit to load more content
+    await autoScrollBy(200, 30);
+    await delay(700);
+  }
+
+  console.log(`✅ Unfollow process completed. Total unfollows: ${totalClicked}`);
+}
+
+clickAndScrollLoop();
